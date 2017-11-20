@@ -5,7 +5,6 @@ assembly/
 .project
 .classpath
 .settings
-**/pom.xml.versionsBackup
 .gradle/
 build/
 /.nb-gradle/

@@ -55,7 +55,7 @@ import java.util.Objects;
     state = StateComplexity.LINEAR,
     repartitions = 1
 )
-public class Join<LEFT, RIGHT, KEY, OUT, W extends Window>
+public class Join<LEFT, RIGHT, KEY, OUT, W extends Window<W>>
     extends StateAwareWindowWiseOperator<Object, Either<LEFT, RIGHT>,
     Either<LEFT, RIGHT>, KEY, Pair<KEY, OUT>, W,
     Join<LEFT, RIGHT, KEY, OUT, W>>
@@ -168,7 +168,7 @@ public class Join<LEFT, RIGHT, KEY, OUT, W extends Window>
       return windowBy(null).output();
     }
 
-    public <W extends Window>
+    public <W extends Window<W>>
     OutputBuilder<LEFT, RIGHT, KEY, OUT, W>
     windowBy(Windowing<Either<LEFT, RIGHT>, W> windowing) {
       return new OutputBuilder<>(name, left, right, leftKeyExtractor,
@@ -182,7 +182,7 @@ public class Join<LEFT, RIGHT, KEY, OUT, W extends Window>
   }
 
   public static class OutputBuilder<
-      LEFT, RIGHT, KEY, OUT, W extends Window>
+      LEFT, RIGHT, KEY, OUT, W extends Window<W>>
       implements Builders.Output<Pair<KEY, OUT>> {
 
     private final String name;

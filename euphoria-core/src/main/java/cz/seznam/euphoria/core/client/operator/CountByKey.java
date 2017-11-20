@@ -37,7 +37,7 @@ import java.util.Objects;
     state = StateComplexity.CONSTANT,
     repartitions = 1
 )
-public class CountByKey<IN, KEY, W extends Window>
+public class CountByKey<IN, KEY, W extends Window<W>>
     extends StateAwareWindowWiseSingleInputOperator<
         IN, IN, IN, KEY, Pair<KEY, Long>, W, CountByKey<IN, KEY, W>> {
 
@@ -82,7 +82,7 @@ public class CountByKey<IN, KEY, W extends Window>
     }
 
     @Override
-    public <W extends Window> OutputBuilder<IN, KEY, W>
+    public <W extends Window<W>> OutputBuilder<IN, KEY, W>
     windowBy(Windowing<IN, W> windowing) {
       return new OutputBuilder<>(name, input, keyExtractor, windowing);
     }
@@ -93,7 +93,7 @@ public class CountByKey<IN, KEY, W extends Window>
     }
   }
 
-  public static class OutputBuilder<IN, KEY, W extends Window>
+  public static class OutputBuilder<IN, KEY, W extends Window<W>>
           implements Builders.Output<Pair<KEY, Long>> {
 
     private final String name;

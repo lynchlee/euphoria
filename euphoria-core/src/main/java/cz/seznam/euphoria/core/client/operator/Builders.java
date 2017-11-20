@@ -20,6 +20,8 @@ import cz.seznam.euphoria.core.client.dataset.Dataset;
 import cz.seznam.euphoria.core.client.dataset.windowing.Window;
 import cz.seznam.euphoria.core.client.dataset.windowing.Windowing;
 import cz.seznam.euphoria.core.client.functional.UnaryFunction;
+import cz.seznam.euphoria.core.client.type.TypeAwareUnaryFunction;
+import cz.seznam.euphoria.core.client.type.TypeHint;
 
 /**
  * Common methods used in operator builders to share related javadoc
@@ -58,6 +60,10 @@ public class Builders {
      * @return the next builder to complete the setup of the operator
      */
     <KEY> Object keyBy(UnaryFunction<IN, KEY> keyExtractor);
+
+    default <KEY> Object keyBy(UnaryFunction<IN, KEY> keyExtractor, TypeHint<KEY> typeHint) {
+      return keyBy(TypeAwareUnaryFunction.of(keyExtractor, typeHint));
+    }
   }
 
   interface WindowBy<IN> {
@@ -74,7 +80,7 @@ public class Builders {
      * @return the next builder to complete the setup of the
      *          {@link ReduceByKey} operator
      */
-    <W extends Window> Object windowBy(Windowing<IN, W> windowing);
+    <W extends Window<W>> Object windowBy(Windowing<IN, W> windowing);
   }
 
   public interface Output<T> {

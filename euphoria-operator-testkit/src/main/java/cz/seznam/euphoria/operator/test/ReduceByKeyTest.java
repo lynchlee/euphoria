@@ -40,6 +40,7 @@ import cz.seznam.euphoria.core.client.triggers.CountTrigger;
 import cz.seznam.euphoria.core.client.triggers.NoopTrigger;
 import cz.seznam.euphoria.core.client.triggers.Trigger;
 import cz.seznam.euphoria.core.client.triggers.TriggerContext;
+import cz.seznam.euphoria.core.client.type.TypeHint;
 import cz.seznam.euphoria.core.client.util.Pair;
 import cz.seznam.euphoria.core.client.util.Sums;
 import cz.seznam.euphoria.core.client.util.Triple;
@@ -255,6 +256,7 @@ public class ReduceByKeyTest extends AbstractOperatorTest {
   }
 
   static class TestWindowing implements Windowing<Integer, IntWindow> {
+
     @Override
     public Iterable<IntWindow> assignWindowsToElement(WindowedElement<?, Integer> input) {
       return Collections.singleton(new IntWindow(input.getElement() / 4));
@@ -264,6 +266,17 @@ public class ReduceByKeyTest extends AbstractOperatorTest {
     public Trigger<IntWindow> getTrigger() {
       return NoopTrigger.get();
     }
+
+    @Override
+    public boolean equals(Object obj) {
+      return obj instanceof TestWindowing;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
   }
 
   @Test
@@ -329,9 +342,9 @@ public class ReduceByKeyTest extends AbstractOperatorTest {
       @Override
       protected Dataset<Pair<String, Long>> getOutput(Dataset<String> input) {
         return ReduceByKey.of(input)
-            .keyBy(e -> e)
-            .valueBy(e -> 1L)
-            .combineBy(Sums.ofLongs())
+            .keyBy(e -> e, TypeHint.of(String.class))
+            .valueBy(e -> 1L, TypeHint.of(Long.class))
+            .combineBy(Sums.ofLongs(), TypeHint.of(Long.class))
             .output();
       }
     });
@@ -446,6 +459,22 @@ public class ReduceByKeyTest extends AbstractOperatorTest {
     public Trigger<CWindow> getTrigger() {
       return new CWindowTrigger();
     }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj instanceof CWindowing) {
+        CWindowing other = (CWindowing) obj;
+        return other.size == size;
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return size;
+    }
+
+
   }
 
   @Test
@@ -605,6 +634,18 @@ public class ReduceByKeyTest extends AbstractOperatorTest {
           }
         };
       }
+
+      @Override
+      public boolean equals(Object obj) {
+        return obj instanceof AssertingWindowing;
+      }
+
+      @Override
+      public int hashCode() {
+        return 0;
+      }
+
+
     }
 
     execute(new AbstractTestCase<Pair<Integer, Long>, Integer>() {
@@ -627,9 +668,9 @@ public class ReduceByKeyTest extends AbstractOperatorTest {
         input = AssignEventTime.of(input).using(Pair::getSecond).output();
         Dataset<Pair<String, Integer>> reduced =
             ReduceByKey.of(input)
-                .keyBy(e -> "")
-                .valueBy(Pair::getFirst)
-                .combineBy(Sums.ofInts())
+                .keyBy(e -> "", new TypeHint<String>() {})
+                .valueBy(Pair::getFirst, new TypeHint<Integer>() {})
+                .combineBy(Sums.ofInts(), new TypeHint<Integer>() {})
                 .windowBy(Time.of(Duration.ofSeconds(5)))
                 .output();
         // ~ now use a custom windowing with a trigger which does

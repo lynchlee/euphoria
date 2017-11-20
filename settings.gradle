@@ -12,6 +12,7 @@ include ':euphoria-kafka'
 include ':euphoria-local'
 include ':euphoria-flink'
 include ':euphoria-spark'
+include ':euphoria-beam'
 
 // ~ extras
 include ':euphoria-fluent'

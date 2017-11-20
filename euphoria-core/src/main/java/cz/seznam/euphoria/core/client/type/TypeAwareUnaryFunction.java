@@ -13,18 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cz.seznam.euphoria.core.client.functional;
+package cz.seznam.euphoria.core.client.type;
 
 import cz.seznam.euphoria.core.annotation.audience.Audience;
-import java.io.Serializable;
+import cz.seznam.euphoria.core.client.functional.UnaryFunction;
 
-/**
- * Function taking zero arguments.
- */
-@Audience(Audience.Type.CLIENT)
-@FunctionalInterface
-public interface VoidFunction<T> extends Serializable {
+@Audience(Audience.Type.EXECUTOR)
+public class TypeAwareUnaryFunction<I, O>
+    extends AbstractTypeAware<UnaryFunction<I, O>, O>
+    implements UnaryFunction<I, O> {
 
-  T apply();
+  private TypeAwareUnaryFunction(UnaryFunction<I, O> function, TypeHint<O> resultType) {
+    super(function, resultType);
+  }
+
+  @Override
+  public O apply(I what) {
+    return getDelegate().apply(what);
+  }
+
+  public static <I, O> TypeAwareUnaryFunction<I, O> of(
+      UnaryFunction<I, O> function, TypeHint<O> typeHint) {
+    return new TypeAwareUnaryFunction<>(function, typeHint);
+  }
 
 }
