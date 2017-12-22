@@ -76,7 +76,8 @@ public class Executors {
         return new TestFlinkExecutor();
       } else {
         return new FlinkExecutor()
-            .setStateBackend(new RocksDBStateBackend("hdfs:///tmp/flink/checkpoints"))
+            .setStateBackend(new RocksDBStateBackend("hdfs:///tmp/flink/checkpoints")
+                .enableLargeListsPerKey())
             .registerClasses(classes);
       }
     }
