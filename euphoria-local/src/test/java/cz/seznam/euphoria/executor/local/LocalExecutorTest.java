@@ -623,4 +623,41 @@ public class LocalExecutorTest {
         1999, 1998, 1997, 1996, 1995);
 
   }
+
+  @Test
+  public void persistTest() throws InterruptedException, ExecutionException {
+    Dataset<Integer> ints = flow.createInput(
+        ListDataSource.unbounded(
+            Arrays.asList(0, 1, 2, 3)));
+
+    // identity map
+    Dataset<Integer> output = FlatMap.of(ints)
+        .using((Integer e, Collector<Integer> c) -> c.collect(e))
+        .output();
+
+    // collector of outputs
+    ListDataSink<Integer> outputSink = ListDataSink.get();
+    output.persist(outputSink);
+//    FlatMap
+//        .of(output)
+//        .using((Integer elem, Collector<Integer> collector) -> collector.collect(elem))
+//        .output()
+//        .persist(outputSink);
+
+    // another sink to avoid NPE due to the unused dataset
+    ListDataSink<Integer> anotherSink = ListDataSink.get();
+    FlatMap
+        .of(output)
+        .using((Integer elem, Collector<Integer> collector) -> collector.collect(elem))
+        .output()
+        .persist(anotherSink);
+
+    executor.submit(flow).get();
+
+    List<Integer> outputs = outputSink.getOutputs();
+    DatasetAssert.unorderedEquals(
+        outputs,
+        0, 1, 2, 3);
+  }
+
 }
